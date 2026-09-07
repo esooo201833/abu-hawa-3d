@@ -27,44 +27,99 @@ export function ImmersiveWorld({
     0.7
   );
 
-  const cbrX = THREE.MathUtils.lerp(
+  /*
+   * Desktop positions
+   */
+  const desktopCbrX = THREE.MathUtils.lerp(
     1.8,
     -0.5,
     cbrProgress
   );
 
-  const cbrZ = THREE.MathUtils.lerp(
+  const desktopCbrZ = THREE.MathUtils.lerp(
     1.5,
     0,
     cbrProgress
   );
 
+  /*
+   * Mobile positions
+   *
+   * Keep the motorcycle much closer to the
+   * center of the scene.
+   */
+  const mobileCbrX = THREE.MathUtils.lerp(
+    0.2,
+    -0.15,
+    cbrProgress
+  );
+
+  const mobileCbrZ = THREE.MathUtils.lerp(
+    0.5,
+    0,
+    cbrProgress
+  );
+
+  /*
+   * Preserve the CBR orientation.
+   */
   const cbrRotationY = THREE.MathUtils.lerp(
     Math.PI,
     Math.PI + 0.5,
     cbrProgress
   );
 
-  const africaX = THREE.MathUtils.lerp(
-    7,
-    0.8,
-    africaProgress
-  );
+  /*
+   * Africa Twin
+   */
+  const desktopAfricaX =
+    THREE.MathUtils.lerp(
+      7,
+      0.8,
+      africaProgress
+    );
 
-  const africaZ = THREE.MathUtils.lerp(
-    -3,
-    -1,
-    africaProgress
-  );
+  const desktopAfricaZ =
+    THREE.MathUtils.lerp(
+      -3,
+      -1,
+      africaProgress
+    );
 
-  const africaRotationY = THREE.MathUtils.lerp(
-    -0.7,
-    -0.15,
-    africaProgress
-  );
+  const mobileAfricaX =
+    THREE.MathUtils.lerp(
+      2.5,
+      0.3,
+      africaProgress
+    );
+
+  const mobileAfricaZ =
+    THREE.MathUtils.lerp(
+      -2,
+      -0.8,
+      africaProgress
+    );
+
+  const africaRotationY =
+    THREE.MathUtils.lerp(
+      -0.7,
+      -0.15,
+      africaProgress
+    );
 
   const cbrVisibility = progress < 0.55;
   const africaVisibility = progress > 0.38;
+
+  /*
+   * CSS viewport detection is not available inside
+   * the R3F render calculation, so we use a responsive
+   * camera-safe scale strategy.
+   *
+   * The camera is responsible for fitting the model.
+   */
+  const isMobile =
+    typeof window !== "undefined" &&
+    window.innerWidth < 768;
 
   return (
     <>
@@ -79,7 +134,11 @@ export function ImmersiveWorld({
 
       <fog
         attach="fog"
-        args={["#050505", 10, 32]}
+        args={[
+          "#050505",
+          10,
+          32,
+        ]}
       />
 
       <ShowroomEnvironment
@@ -89,14 +148,24 @@ export function ImmersiveWorld({
       {cbrVisibility && (
         <group
           position={[
-            cbrX,
+            isMobile
+              ? mobileCbrX
+              : desktopCbrX,
+
             -0.02,
-            cbrZ,
+
+            isMobile
+              ? mobileCbrZ
+              : desktopCbrZ,
           ]}
         >
           <MotorcycleModel
             url="/models/cbr650r.glb"
-            scale={1.6}
+            scale={
+              isMobile
+                ? 1.25
+                : 1.6
+            }
             rotation={[
               0,
               cbrRotationY,
@@ -109,14 +178,24 @@ export function ImmersiveWorld({
       {africaVisibility && (
         <group
           position={[
-            africaX,
+            isMobile
+              ? mobileAfricaX
+              : desktopAfricaX,
+
             -0.02,
-            africaZ,
+
+            isMobile
+              ? mobileAfricaZ
+              : desktopAfricaZ,
           ]}
         >
           <MotorcycleModel
             url="/models/africa-twin.glb"
-            scale={1.35}
+            scale={
+              isMobile
+                ? 1.1
+                : 1.35
+            }
             rotation={[
               0,
               africaRotationY,
@@ -127,14 +206,20 @@ export function ImmersiveWorld({
       )}
 
       <mesh
-        position={[0, -0.78, -1]}
+        position={[
+          0,
+          -0.78,
+          -1,
+        ]}
         rotation={[
           -Math.PI / 2,
           0,
           0,
         ]}
       >
-        <circleGeometry args={[5, 64]} />
+        <circleGeometry
+          args={[5, 64]}
+        />
 
         <meshBasicMaterial
           color="#ffffff"
